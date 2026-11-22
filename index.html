@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Revela">
+<meta name="theme-color" content="#17130f">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icone-180.png">
+<title>Revela</title>
+<style>
+:root{--fundo:#17130f;--painel:#221c16;--linha:#3a3027;--bege:#f3ead9;--areia:#c9b79a;--terra:#c7643a;--musgo:#7d8a5a;--cinza:#8f8476}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--fundo);color:var(--bege);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+body{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+/* topo */
+header{display:flex;align-items:center;gap:8px;padding:10px 14px;flex:0 0 auto}
+header h1{font-size:19px;letter-spacing:.06em;margin:0;font-weight:700;flex:1}
+header h1 span{color:var(--terra)}
+.btn{background:var(--painel);border:1px solid var(--linha);border-radius:999px;padding:8px 14px;font-size:15px}
+.btn.forte{background:var(--terra);border-color:var(--terra);color:#fff;font-weight:600}
+.btn:disabled{opacity:.4}
+/* foto */
+#palco{flex:1 1 auto;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;padding:4px 10px;touch-action:none}
+#tela{max-width:100%;max-height:100%;border-radius:6px;display:block}
+#vazio{text-align:center;color:var(--areia);padding:20px}
+#vazio .btn{font-size:18px;padding:14px 26px;margin-top:14px}
+#vazio p{margin:6px 0;font-size:14px;color:var(--cinza)}
+#selo{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(23,19,15,.8);border-radius:999px;padding:4px 12px;font-size:13px;pointer-events:none}
+#nav{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;background:rgba(23,19,15,.8);border-radius:999px;padding:4px 8px;font-size:14px}
+#nav button{padding:4px 10px;font-size:18px}
+/* painel */
+#painel{flex:0 0 auto;background:var(--painel);border-top:1px solid var(--linha);padding-bottom:env(safe-area-inset-bottom)}
+#abas{display:flex;border-bottom:1px solid var(--linha)}
+#abas button{flex:1;padding:11px 0;font-size:15px;color:var(--cinza)}
+#abas button.ativa{color:var(--bege);box-shadow:inset 0 -2px 0 var(--terra)}
+.aba{padding:12px 0 14px}
+#lista{display:flex;gap:10px;overflow-x:auto;padding:0 14px 6px;scrollbar-width:none}
+#lista::-webkit-scrollbar{display:none}
+.filtro{flex:0 0 auto;width:74px;text-align:center;font-size:12px;color:var(--areia);position:relative}
+.filtro .mini{width:74px;height:74px;border-radius:8px;background:#000 center/cover;border:2px solid transparent;display:block}
+.filtro.sel .mini{border-color:var(--terra)}
+.filtro.sel{color:var(--bege)}
+.filtro .nome{display:block;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.filtro .x{position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:var(--linha);font-size:12px;line-height:20px}
+.filtro.add .mini{display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--areia);border:1px dashed var(--linha);background:none}
+.linha{display:flex;align-items:center;gap:10px;padding:6px 16px}
+.linha label{flex:0 0 96px;font-size:14px;color:var(--areia)}
+.linha output{flex:0 0 38px;text-align:right;font-size:13px;color:var(--cinza);font-variant-numeric:tabular-nums}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:28px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--linha);border-radius:3px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--bege);margin-top:-9.5px;box-shadow:0 1px 4px #0008}
+input[type=range]::-moz-range-track{height:3px;background:var(--linha)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--bege);border:0}
+#ajustes{max-height:34vh;overflow-y:auto}
+.acoes{display:flex;gap:8px;padding:10px 16px 0;justify-content:space-between}
+.acoes .btn{font-size:14px;padding:7px 12px}
+.dica{font-size:12px;color:var(--cinza);text-align:center;padding:4px 16px 0}
+#aviso{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:var(--bege);color:var(--fundo);padding:10px 16px;border-radius:12px;font-size:14px;max-width:90vw;text-align:center;z-index:9;box-shadow:0 4px 16px #0009}
+#carregando{position:fixed;inset:0;background:rgba(23,19,15,.75);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:8}
+</style>
+</head>
+<body>
+<header>
+  <h1>REVEL<span>A</span></h1>
+  <button class="btn" id="bAbrir">Abrir</button>
+  <button class="btn forte" id="bSalvar" disabled>Salvar</button>
+</header>
+
+<div id="palco">
+  <div id="vazio">
+    <div style="font-size:40px">🎞️</div>
+    <button class="btn forte" id="bAbrir2">Escolher fotos</button>
+    <p>Pode escolher várias: o mesmo filtro vale para todas.</p>
+  </div>
+  <canvas id="tela" hidden></canvas>
+  <div id="selo" hidden>Original</div>
+  <div id="nav" hidden><button id="bAnt">‹</button><span id="pos">1/1</span><button id="bProx">›</button></div>
+</div>
+
+<div id="painel">
+  <div id="abas"><button data-aba="filtros" class="ativa">Filtros</button><button data-aba="ajustes">Ajustes</button></div>
+  <div class="aba" id="aba-filtros">
+    <div id="lista"></div>
+    <div class="linha"><label>Intensidade</label><input type="range" id="intens" min="0" max="100" value="100"><output id="oIntens">100</output></div>
+    <div class="dica">Segure o dedo na foto para ver o original.</div>
+  </div>
+  <div class="aba" id="aba-ajustes" hidden>
+    <div id="ajustes"></div>
+    <div class="acoes"><button class="btn" id="bZerar">Zerar ajustes</button><button class="btn" id="bGuardar">＋ Salvar como meu filtro</button></div>
+  </div>
+</div>
+
+<input type="file" id="arq" accept="image/*" multiple hidden>
+<input type="file" id="arqCube" accept=".cube,text/plain,application/octet-stream" hidden>
+<div id="aviso" hidden></div>
+<div id="carregando" hidden>Revelando…</div>
+
+<script src="luts.js"></script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const MAX_EXPORT=4096, MAX_PREVIEW=1400;
+const AJ=[ // id, rótulo, min, max
+  ['exp','Exposição',-100,100],['contr','Contraste',-100,100],['real','Realces',-100,100],['somb','Sombras',-100,100],
+  ['temp','Temperatura',-100,100],['tint','Tonalidade',-100,100],['sat','Saturação',-100,100],['vib','Vibração',-100,100],
+  ['desb','Desbotar',0,100],['grao','Granulado',0,100],['vinh','Vinheta',0,100]];
+const ZERO=Object.fromEntries(AJ.map(a=>[a[0],0]));
+// filtros prontos: lut + intensidade + ajustes
+const PRONTOS=[
+  {id:'orig',nome:'Original',lut:null,intens:100,aj:{}},
+  {id:'fuji',nome:'Fuji NYC',lut:'fuji',intens:100,aj:{}},
+  {id:'fujis',nome:'Fuji suave',lut:'fuji',intens:60,aj:{}},
+  {id:'fujif',nome:'Fuji filme',lut:'fuji',intens:85,aj:{desb:35,grao:35,vinh:25}},
+  {id:'quente',nome:'Tarde',lut:null,intens:100,aj:{temp:35,contr:10,sat:-10,desb:20,somb:15}},
+  {id:'pb',nome:'P&B',lut:null,intens:100,aj:{sat:-100,contr:25,grao:25}},
+];
+// ---------- armazenamento (com try/catch: no iPhone pode falhar) ----------
+const guardar=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const ler=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+let meus=ler('revela.meus',[]);          // [{id,nome,lut,intens,aj}]
+let lutsUser=ler('revela.luts',{});      // id -> {nome,N,b64}
+let estado=ler('revela.estado',{filtro:'fuji',intens:100,aj:{...ZERO}});
+estado.aj={...ZERO,...estado.aj};
+
+// ---------- WebGL ----------
+const cv=$('#tela');
+const gl=cv.getContext('webgl',{preserveDrawingBuffer:true,premultipliedAlpha:false});
+if(!gl){alert('Este navegador não tem WebGL.');}
+const VS=`attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`;
+const FS=`precision highp float;varying vec2 uv;
+uniform sampler2D img,lut;uniform float N,lutAmt,usaLut,orig;
+uniform float exp_,contr,real,somb,temp,tint,sat,vib,desb,grao,vinh;uniform vec2 res;
+float luma(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
+vec3 aplicaLut(vec3 c){c=clamp(c,0.,1.);float b=c.b*(N-1.);float b0=floor(b);float b1=min(b0+1.,N-1.);float f=b-b0;
+ float x=c.r*(N-1.)+.5;float y=(c.g*(N-1.)+.5)/N;
+ vec3 a=texture2D(lut,vec2((b0*N+x)/(N*N),y)).rgb;vec3 d=texture2D(lut,vec2((b1*N+x)/(N*N),y)).rgb;return mix(a,d,f);}
+float hash(vec2 p){p=fract(p*vec2(443.897,441.423));p+=dot(p,p.yx+19.19);return fract((p.x+p.y)*p.x);}
+void main(){vec3 c=texture2D(img,uv).rgb;if(orig>.5){gl_FragColor=vec4(c,1.);return;}
+ c*=pow(2.,exp_*1.5);
+ c.r*=1.+temp*.10;c.b*=1.-temp*.10;c.g*=1.-tint*.07;
+ float L=luma(c);
+ c+=somb*.30*pow(clamp(1.-L,0.,1.),3.);
+ c+=real*.25*pow(clamp(L,0.,1.),2.)*(real<0.?1.:(1.-L*.5));
+ c=(c-.5)*(1.+contr*.45)+.5;
+ L=luma(c);float s0=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b));
+ float k=1.+sat+vib*(1.-clamp(s0*1.6,0.,1.));c=mix(vec3(L),c,max(k,0.));
+ c=clamp(c,0.,1.);
+ if(usaLut>.5)c=mix(c,aplicaLut(c),lutAmt);
+ c=desb*.10+c*(1.-desb*.14);
+ vec2 g=floor(uv*res/max(res.x,res.y)*1600.);float n=hash(g)-.5;
+ L=luma(c);c+=n*grao*.16*(1.-abs(L-.5)*1.2);
+ float d=distance(uv,vec2(.5))*1.35;c*=1.-vinh*.55*smoothstep(.35,1.,d);
+ gl_FragColor=vec4(clamp(c,0.,1.),1.);}`;
+function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o}
+const prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);gl.useProgram(prog);
+const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+const pl=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(pl);gl.vertexAttribPointer(pl,2,gl.FLOAT,false,0,0);
+const U=n=>gl.getUniformLocation(prog,n);
+gl.uniform1i(U('img'),0);gl.uniform1i(U('lut'),1);
+gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
+function novaTex(){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+ for(const [a,b] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,a,b);return t}
+const texImg=novaTex(), texLut=novaTex();
+const MAXTEX=gl.getParameter(gl.MAX_TEXTURE_SIZE);
+
+// ---------- LUTs ----------
+const lutCache={};
+function lutBytes(id){
+  if(lutCache[id])return lutCache[id];
+  const L=(window.LUTS_EMBUTIDAS||{})[id]||lutsUser[id];if(!L)return null;
+  const raw=Uint8Array.from(atob(L.b64),c=>c.charCodeAt(0)),N=L.N;
+  // reorganiza: textura (x=b*N+r, y=g)
+  const out=new Uint8Array(N*N*N*3);
+  for(let b=0;b<N;b++)for(let g=0;g<N;g++)for(let r=0;r<N;r++){const i=(r+g*N+b*N*N)*3,o=(g*N*N+b*N+r)*3;out[o]=raw[i];out[o+1]=raw[i+1];out[o+2]=raw[i+2];}
+  return lutCache[id]={N,data:out};
+}
+let lutAtual=null;
+function usarLut(id){
+  if(!id||id===lutAtual)return;const L=lutBytes(id);if(!L)return;
+  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,texLut);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,L.N*L.N,L.N,0,gl.RGB,gl.UNSIGNED_BYTE,L.data);
+  gl.activeTexture(gl.TEXTURE0);lutAtual=id;
+}
+function lerCube(txt){
+  const v=[];let N=0;
+  for(const l of txt.split(/\r?\n/)){const t=l.trim();if(!t||t[0]==='#')continue;
+    if(/^LUT_3D_SIZE/i.test(t)){N=parseInt(t.split(/\s+/)[1]);continue}
+    if(/^[A-Z_]/i.test(t))continue;
+    const p=t.split(/\s+/).map(Number);if(p.length>=3&&p.every(x=>!isNaN(x)))v.push(p[0],p[1],p[2]);}
+  if(!N||v.length!==N*N*N*3)throw new Error('Arquivo .cube inválido (só LUT 3D).');
+  // reamostra para no máx. 33 (economiza espaço)
+  const M=Math.min(N,33),out=new Uint8Array(M*M*M*3);
+  const at=(r,g,b,k)=>v[(r+g*N+b*N*N)*3+k];
+  for(let b=0;b<M;b++)for(let g=0;g<M;g++)for(let r=0;r<M;r++)for(let k=0;k<3;k++){
+    const f=x=>x*(N-1)/(M-1);const R=f(r),G=f(g),B=f(b);
+    const r0=Math.floor(R),g0=Math.floor(G),b0=Math.floor(B),r1=Math.min(r0+1,N-1),g1=Math.min(g0+1,N-1),b1=Math.min(b0+1,N-1);
+    const fr=R-r0,fg=G-g0,fb=B-b0;
+    const c00=at(r0,g0,b0,k)*(1-fr)+at(r1,g0,b0,k)*fr,c10=at(r0,g1,b0,k)*(1-fr)+at(r1,g1,b0,k)*fr;
+    const c01=at(r0,g0,b1,k)*(1-fr)+at(r1,g0,b1,k)*fr,c11=at(r0,g1,b1,k)*(1-fr)+at(r1,g1,b1,k)*fr;
+    const val=(c00*(1-fg)+c10*fg)*(1-fb)+(c01*(1-fg)+c11*fg)*fb;
+    out[(r+g*M+b*M*M)*3+k]=Math.max(0,Math.min(255,Math.round(val*255)));}
+  let s='';for(let i=0;i<out.length;i+=8192)s+=String.fromCharCode.apply(null,out.subarray(i,i+8192));
+  return {N:M,b64:btoa(s)};
+}
+
+// ---------- fotos ----------
+let fotos=[];   // {file, nome}
+let idx=0, fonte=null; // fonte = canvas 2D com a foto na resolução de exportação
+function carregaImg(file){return new Promise((ok,erro)=>{const u=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{ok(im)};im.onerror=()=>{URL.revokeObjectURL(u);erro(new Error('Não consegui abrir '+file.name))};im.src=u;})}
+async function fonteDe(file,maxLado){
+  const im=await carregaImg(file);const lim=Math.min(maxLado,MAXTEX);
+  const s=Math.min(1,lim/Math.max(im.naturalWidth,im.naturalHeight));
+  const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(im.src);return c;
+}
+let prev=null; // fonte reduzida para a tela
+async function abrirFoto(i){
+  idx=i;mostraCarregando(true);
+  try{prev=await fonteDe(fotos[i].file,MAX_PREVIEW);}catch(e){aviso(e.message);mostraCarregando(false);return}
+  $('#vazio').hidden=true;cv.hidden=false;$('#bSalvar').disabled=false;
+  $('#nav').hidden=fotos.length<2;$('#pos').textContent=(i+1)+'/'+fotos.length;
+  subir(prev);desenha();await miniaturas();mostraCarregando(false);
+}
+function subir(src){gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texImg);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,src);}
+
+// ---------- render ----------
+let verOriginal=false;
+function filtroAtual(){return PRONTOS.find(f=>f.id===estado.filtro)||meus.find(f=>f.id===estado.filtro)||PRONTOS[0]}
+function render(w,h,f,intens,aj,orig){
+  cv.width=w;cv.height=h;gl.viewport(0,0,w,h);
+  const lut=f.lut;if(lut)usarLut(lut);
+  gl.uniform1f(U('usaLut'),lut&&lutBytes(lut)?1:0);gl.uniform1f(U('N'),lut&&lutBytes(lut)?lutBytes(lut).N:2);
+  gl.uniform1f(U('lutAmt'),intens/100);gl.uniform1f(U('orig'),orig?1:0);gl.uniform2f(U('res'),w,h);
+  // ajustes = do filtro + do usuário (somados)
+  const t={...ZERO};for(const k in t)t[k]=Math.max(-100,Math.min(100,(f.aj[k]||0)+(aj[k]||0)));
+  const m={exp:'exp_',contr:'contr',real:'real',somb:'somb',temp:'temp',tint:'tint',sat:'sat',vib:'vib',desb:'desb',grao:'grao',vinh:'vinh'};
+  for(const k in m)gl.uniform1f(U(m[k]),t[k]/100);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+let pedido=0;
+function desenha(){if(!prev)return;cancelAnimationFrame(pedido);pedido=requestAnimationFrame(()=>{
+  render(prev.width,prev.height,filtroAtual(),estado.intens,estado.aj,verOriginal);});}
+
+// ---------- miniaturas dos filtros ----------
+const todos=()=>[...PRONTOS,...meus];
+async function miniaturas(){
+  const box=$('#lista');box.innerHTML='';
+  let mini=null;
+  if(prev){const s=160/Math.min(prev.width,prev.height);mini=document.createElement('canvas');
+    mini.width=Math.round(prev.width*s);mini.height=Math.round(prev.height*s);mini.getContext('2d').drawImage(prev,0,0,mini.width,mini.height);subir(mini);}
+  for(const f of todos()){
+    const d=document.createElement('button');d.className='filtro'+(f.id===estado.filtro?' sel':'');
+    let bg='';if(mini){render(mini.width,mini.height,f,f.intens,ZERO,false);bg=cv.toDataURL('image/jpeg',.7);}
+    d.innerHTML=`<span class="mini" style="${bg?`background-image:url(${bg})`:''}"></span><span class="nome"></span>`;
+    d.querySelector('.nome').textContent=f.nome;
+    d.onclick=()=>escolhe(f.id);
+    if(meus.includes(f)){const x=document.createElement('span');x.className='x';x.textContent='✕';
+      x.onclick=e=>{e.stopPropagation();if(confirm('Apagar o filtro "'+f.nome+'"?')){meus=meus.filter(m=>m!==f);guardar('revela.meus',meus);if(estado.filtro===f.id)estado.filtro='orig';salvaEstado();miniaturas();desenha();}};d.appendChild(x);}
+    box.appendChild(d);
+  }
+  const add=document.createElement('button');add.className='filtro add';
+  add.innerHTML='<span class="mini">＋</span><span class="nome">Importar .cube</span>';add.onclick=()=>$('#arqCube').click();box.appendChild(add);
+  if(prev)subir(prev);
+  box.querySelector('.sel')?.scrollIntoView({inline:'center',block:'nearest'});
+}
+function escolhe(id){const f=todos().find(x=>x.id===id);estado.filtro=id;estado.intens=f.intens;
+  $('#intens').value=f.intens;$('#oIntens').textContent=f.intens;
+  document.querySelectorAll('.filtro').forEach((el,i)=>el.classList.toggle('sel',todos()[i]?.id===id));salvaEstado();desenha();}
+
+// ---------- ajustes ----------
+function montaAjustes(){const box=$('#ajustes');box.innerHTML='';
+  for(const [id,rot,min,max] of AJ){const l=document.createElement('div');l.className='linha';
+    l.innerHTML=`<label>${rot}</label><input type="range" min="${min}" max="${max}" value="${estado.aj[id]}"><output>${estado.aj[id]}</output>`;
+    const r=l.querySelector('input'),o=l.querySelector('output');
+    r.oninput=()=>{estado.aj[id]=+r.value;o.textContent=r.value;desenha();};r.onchange=salvaEstado;
+    l.querySelector('label').ondblclick=()=>{r.value=0;r.oninput();salvaEstado()};
+    box.appendChild(l);}}
+function salvaEstado(){guardar('revela.estado',estado)}
+
+// ---------- salvar ----------
+async function salvar(){
+  if(!fotos.length)return;mostraCarregando(true,'Revelando…');
+  const arquivos=[];
+  try{
+    for(let i=0;i<fotos.length;i++){
+      $('#carregando').textContent=fotos.length>1?`Revelando ${i+1} de ${fotos.length}…`:'Revelando…';
+      const src=await fonteDe(fotos[i].file,MAX_EXPORT);subir(src);
+      render(src.width,src.height,filtroAtual(),estado.intens,estado.aj,false);
+      const blob=await new Promise(ok=>cv.toBlob(ok,'image/jpeg',.93));
+      const base=fotos[i].file.name.replace(/\.[^.]+$/,'');
+      arquivos.push(new File([blob],base+'_revela.jpg',{type:'image/jpeg'}));
+    }
+  }catch(e){aviso('Erro ao revelar: '+e.message)}
+  subir(prev);desenha();mostraCarregando(false);
+  if(!arquivos.length)return;
+  if(navigator.canShare&&navigator.canShare({files:arquivos})){
+    try{await navigator.share({files:arquivos});}catch(e){if(e.name!=='AbortError')baixar(arquivos)}
+  }else baixar(arquivos);
+}
+function baixar(arqs){for(const f of arqs){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();a.remove();}
+  aviso('Arquivo(s) baixado(s).')}
+
+// ---------- utilidades ----------
+let tAviso;function aviso(t){const a=$('#aviso');a.textContent=t;a.hidden=false;clearTimeout(tAviso);tAviso=setTimeout(()=>a.hidden=true,3200)}
+function mostraCarregando(s,t){const c=$('#carregando');if(t)c.textContent=t;c.hidden=!s}
+
+// ---------- eventos ----------
+$('#bAbrir').onclick=$('#bAbrir2').onclick=()=>$('#arq').click();
+$('#arq').onchange=e=>{const fs=[...e.target.files];if(!fs.length)return;fotos=fs.map(f=>({file:f}));abrirFoto(0);e.target.value='';};
+$('#bAnt').onclick=()=>abrirFoto((idx-1+fotos.length)%fotos.length);
+$('#bProx').onclick=()=>abrirFoto((idx+1)%fotos.length);
+$('#bSalvar').onclick=salvar;
+$('#intens').oninput=e=>{estado.intens=+e.target.value;$('#oIntens').textContent=e.target.value;desenha()};
+$('#intens').onchange=salvaEstado;
+document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#abas button').forEach(x=>x.classList.toggle('ativa',x===b));
+  $('#aba-filtros').hidden=b.dataset.aba!=='filtros';$('#aba-ajustes').hidden=b.dataset.aba!=='ajustes';});
+$('#bZerar').onclick=()=>{estado.aj={...ZERO};montaAjustes();salvaEstado();desenha()};
+$('#bGuardar').onclick=()=>{
+  const nome=prompt('Nome do seu filtro:','Meu filtro '+(meus.length+1));if(!nome)return;
+  const base=filtroAtual(),aj={...ZERO};for(const k in aj)aj[k]=Math.max(-100,Math.min(100,(base.aj[k]||0)+estado.aj[k]));
+  const f={id:'m'+Date.now(),nome:nome.trim().slice(0,24),lut:base.lut,intens:estado.intens,aj};
+  meus.push(f);guardar('revela.meus',meus);estado.filtro=f.id;estado.aj={...ZERO};montaAjustes();salvaEstado();miniaturas();desenha();
+  aviso('Filtro "'+f.nome+'" salvo.');};
+$('#arqCube').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const L=lerCube(await f.text());const id='u'+Date.now();const nome=f.name.replace(/\.cube$/i,'').slice(0,24);
+    lutsUser[id]={nome,...L};guardar('revela.luts',lutsUser);
+    const fl={id:'m'+Date.now(),nome,lut:id,intens:100,aj:{}};meus.push(fl);guardar('revela.meus',meus);
+    estado.filtro=fl.id;estado.intens=100;$('#intens').value=100;$('#oIntens').textContent=100;salvaEstado();await miniaturas();desenha();aviso('LUT "'+nome+'" importado.');
+  }catch(err){aviso(err.message)}};
+// segurar para ver o original
+const palco=$('#palco');
+const on=()=>{if(!prev)return;verOriginal=true;$('#selo').hidden=false;desenha()},off=()=>{if(!verOriginal)return;verOriginal=false;$('#selo').hidden=true;desenha()};
+palco.addEventListener('pointerdown',e=>{if(e.target===cv)on()});
+['pointerup','pointercancel','pointerleave'].forEach(t=>palco.addEventListener(t,off));
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+
+// início
+$('#intens').value=estado.intens;$('#oIntens').textContent=estado.intens;
+montaAjustes();miniaturas();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
